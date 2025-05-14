@@ -5,7 +5,7 @@ Web版本启动入口
 import os
 import sys
 import logging
-from utils.common import load_env_file, ensure_directories
+from utils.common import load_env_file, ensure_directories, create_placeholder_images
 from web_app.app import app
 
 # 设置日志
@@ -29,6 +29,19 @@ def setup_api_key():
     except Exception as e:
         logger.error(f"设置API密钥时出错: {e}")
 
+def check_environment():
+    """检查和准备运行环境"""
+    # 创建必要的目录
+    ensure_directories("saves")
+    
+    # 检查并创建占位图像
+    images_dir = os.path.join("web_app", "static", "images")
+    if not os.path.exists(images_dir) or not os.listdir(images_dir):
+        logger.info("检测到web_app/static/images目录为空，创建占位图像...")
+        create_placeholder_images()
+    
+    return True
+
 def main():
     """
     主函数
@@ -42,8 +55,8 @@ def main():
     # 设置API密钥
     setup_api_key()
     
-    # 创建必要的目录
-    ensure_directories("saves")
+    # 检查环境
+    check_environment()
     
     try:
         # 运行Flask应用
@@ -51,6 +64,7 @@ def main():
         app.run(debug=False, host='0.0.0.0', port=5000)
     except ImportError as e:
         logger.error(f"导入Web应用时出错: {e}")
+        logger.error("请确保已安装所有依赖，可运行: pip install -r web_app/requirements.txt")
     except Exception as e:
         logger.error(f"启动Web应用时出错: {e}")
 

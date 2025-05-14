@@ -222,3 +222,93 @@ def list_duplicate_managers():
                     print(f"读取文件 {file_path} 时出错: {str(e)}")
     
     return manager_types 
+
+def create_placeholder_image(text, size=(128, 128), color=(100, 100, 100), filename="placeholder", target_dir=None):
+    """
+    创建带有文字的占位图像
+    
+    参数:
+        text: 图像中显示的文字
+        size: 图像尺寸，默认128x128
+        color: 背景颜色
+        filename: 保存的文件名（不含扩展名）
+        target_dir: 保存图像的目标目录
+    """
+    try:
+        from PIL import Image, ImageDraw, ImageFont
+        
+        # 如果未指定目标目录，使用默认目录
+        if target_dir is None:
+            target_dir = os.path.join(get_project_root(), "web_app", "static", "images")
+            
+        os.makedirs(target_dir, exist_ok=True)
+        
+        img = Image.new('RGBA', size, color)
+        draw = ImageDraw.Draw(img)
+        
+        # 尝试加载默认字体，如果失败则使用默认配置
+        try:
+            try:
+                # 尝试加载中文字体
+                if os.name == 'nt':  # Windows
+                    font = ImageFont.truetype("simhei.ttf", 16)
+                else:  # macOS, Linux
+                    font = ImageFont.truetype("NotoSansSC-Regular.otf", 16)
+            except:
+                # 回退到系统默认
+                font = ImageFont.load_default()
+                
+            # 计算文本位置以居中
+            text_width, text_height = draw.textsize(text, font=font)
+            position = ((size[0] - text_width) / 2, (size[1] - text_height) / 2)
+            draw.text(position, text, fill="white", font=font)
+        except:
+            # 如果字体处理有问题，使用最简单的文本绘制
+            draw.text((10, 10), text, fill="white")
+        
+        # 保存图像
+        img.save(f"{target_dir}/{filename}.png")
+        print(f"创建图像: {filename}.png")
+    except ImportError:
+        print("警告: 无法导入PIL库，图像生成失败。请安装Pillow: pip install pillow")
+    except Exception as e:
+        print(f"创建图像失败: {e}")
+
+def create_placeholder_images(target_dir=None):
+    """
+    创建一系列占位图像并保存到指定目录
+    
+    参数:
+        target_dir: 保存图像的目标目录，默认为web_app/static/images
+    """
+    # 如果未指定目标目录，使用默认目录
+    if target_dir is None:
+        target_dir = os.path.join(get_project_root(), "web_app", "static", "images")
+        
+    # 确保目标目录存在
+    os.makedirs(target_dir, exist_ok=True)
+    
+    # 创建各种表情的角色图像
+    create_placeholder_image("笑", color=(50, 150, 50), filename="sutang_happy", target_dir=target_dir)
+    create_placeholder_image("微笑", color=(100, 150, 100), filename="sutang_smile", target_dir=target_dir)
+    create_placeholder_image("普通", color=(100, 100, 100), filename="sutang_normal", target_dir=target_dir)
+    create_placeholder_image("中性", color=(150, 150, 150), filename="sutang_neutral", target_dir=target_dir)
+    create_placeholder_image("不高兴", color=(150, 50, 50), filename="sutang_unhappy", target_dir=target_dir)
+    create_placeholder_image("图标", color=(0, 100, 200), filename="icon", target_dir=target_dir)
+    
+    # 创建favicon.ico
+    try:
+        from PIL import Image
+        favicon_path = os.path.join(target_dir, "favicon.ico")
+        icon_path = os.path.join(target_dir, "icon.png")
+        if os.path.exists(icon_path):
+            try:
+                icon = Image.open(icon_path)
+                icon.save(favicon_path)
+                print(f"创建图像: favicon.ico")
+            except Exception as e:
+                print(f"创建favicon.ico失败: {e}")
+    except ImportError:
+        pass
+    
+    print("所有占位图像创建完成") 

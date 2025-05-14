@@ -99,8 +99,7 @@ graph TD
     GM --> SceneMgr
     GM --> TopicMgr
     GM --> StoryMgr
-    GM --> AchSys
-    GM --> AffSys # GameManager 可能直接初始化 AffectionSystem
+    GM --> AchSys # GameManager 可能直接初始化 AffectionSystem
     GM --> GS # GameManager 可能直接进行存取档操作或委托
 
     DS --> Agent
@@ -128,7 +127,7 @@ graph TD
     Agent <-- Env # Agent 加载 API Key
 ```
 
-## 3. 目录结构 (校正后)
+## 3. 目录结构 (优化后)
 
 ```
 Su_Tang/
@@ -170,6 +169,9 @@ Su_Tang/
 │   └── sutang_prompt.txt     # 苏糖主提示
 ├── saves/                  # 游戏存档 (JSON格式)
 │   └── metadata.json       # 存档元数据
+├── utils/                  # 通用工具函数
+│   ├── common.py           # 常用功能集合
+│   └── __init__.py
 ├── web_app/                # Web应用 (Flask)
 │   ├── static/             # Web静态资源 (CSS, JS, images)
 │   ├── templates/          # HTML模板 (index.html)
@@ -180,11 +182,8 @@ Su_Tang/
 ├── .env.example            # 环境变量模板
 ├── .gitignore
 ├── achievement_system.py   # 成就系统
-├── api_test.py             # API测试脚本
 ├── Character_Factory.py    # 角色工厂
 ├── Game_Storage.py         # 游戏存档/读档及日志记录
-├── install.py              # (旧) 安装脚本
-├── install_and_run.py      # (旧) 安装并运行脚本
 ├── install_deps.py         # 依赖安装脚本
 ├── install_windows.bat     # Windows安装批处理
 ├── LICENSE
@@ -541,48 +540,55 @@ Su_Tang/
     git clone <repository_url>
     cd Su_Tang 
     ```
-3.  **创建并激活虚拟环境 (推荐):**
+3.  **使用安装脚本 (推荐):**
     ```bash
+    # Windows
+    python install_deps.py
+    
+    # macOS/Linux
+    python3 install_deps.py
+    ```
+    
+    安装脚本会自动执行以下操作:
+    - 创建虚拟环境 (web_venv)
+    - 安装所有必要的依赖
+    - 设置.env文件 (如果不存在)
+    
+4.  **手动安装 (可选):**
+    ```bash
+    # 创建并激活虚拟环境
     python -m venv venv 
     # Windows
     venv\Scripts\activate
     # macOS/Linux
     source venv/bin/activate
-    ```
-4.  **安装依赖:**
-    ```bash
+    
+    # 安装依赖
     pip install -r requirements.txt
     ```
-    这会安装 `requirements.txt` 文件中列出的所有库，例如 `Flask`, `openai`, `pyyaml`, `jieba`, `SnowNLP`, `colorama`。
 5.  **配置 API Key:**
     *   复制 `.env.example` 文件并重命名为 `.env`。
     *   打开 `.env` 文件，将其中的 `DEEPSEEK_API_KEY=` (或相应的LLM API密钥字段) 替换为你自己的有效API密钥。
     ```
     DEEPSEEK_API_KEY=your_actual_api_key_here
     ```
-6.  **(可选) 下载 jieba 词典:**
-    第一次运行 `NaturalLanguageProcessor` 时，`jieba` 可能会尝试下载其默认词典。确保网络连接通畅。如果项目包含自定义词典 (如 `user_dict.txt`)，确保路径配置正确。
 
 ### 6.2 运行游戏
 
 *   **命令行版本:**
-    在项目根目录下，激活虚拟环境后运行：
+    在项目根目录下运行：
     ```bash
     python main.py
     ```
-    或者直接运行 `game` 目录下的 `main.py`:
-    ```bash
-    python game/main.py
-    ```
 
 *   **Web 版本:**
-    在项目根目录下，激活虚拟环境后运行：
+    在项目根目录下运行：
     ```bash
     python web_start.py
     ```
-    或者 (如果在Windows上，且 `start_web.bat` 配置正确)：
+    或者 (如果在Windows上)：
     ```bash
-    ./start_web.bat
+    start_web.bat
     ```
     启动成功后，通常会在终端显示类似 `* Running on http://127.0.0.1:5000/` 的信息。
     然后在你的网页浏览器中打开显示的地址 (通常是 `http://127.0.0.1:5000` 或 `http://localhost:5000`)。
